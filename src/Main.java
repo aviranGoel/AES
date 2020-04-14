@@ -1,63 +1,136 @@
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+
 public class Main
 {
-    public static void main(String[] args) {
-        byte a;
-        byte b;
-        byte c;
-
-        a = 0;
-        b = 0;
-        c = (byte) (a^b);
-        System.out.println(+ a + "^" + b + "=" + c);
-
-        a = 0;
-        b = 1;
-        c = (byte) (a^b);
-        System.out.println(+ a + "^" + b + "=" + c);
-
-        a = 1;
-        b = 0;
-        c = (byte) (a^b);
-        System.out.println(+ a + "^" + b + "=" + c);
-
-        a = 1;
-        b = 1;
-        c = (byte) (a^b);
-        System.out.println(+ a + "^" + b + "=" + c);
-
-        System.out.println();
-
-        int matrixSize = 4;
-        int[][] matrix = new int[matrixSize][matrixSize];
-        int count = 0;
-
-        for (int row = 0; row < matrixSize; row++)
+    public static void main(String[] args) throws IOException {
+        //User command is to encrypt or decrypt:
+        if(args[0].equals("-e") || args[0].equals("-d"))
         {
-            for (int col = 0; col < matrixSize; col++)
+            //Get key path and input path inorder to read thier bytes:
+
+            //args[1] it's "-k"
+            //args[2] it's <path-to-key-file>
+            Path keyPath = Paths.get(args[2]);
+
+            //args[3] it's "-i"
+            //args[4] it's <path-to-input-file>
+            Path inputPath = Paths.get(args[4]);
+
+            //Get the 1D byte array of the files from the path:
+            byte[] key1DByteArray = Files.readAllBytes(keyPath);
+            byte[] input1DByteArray = Files.readAllBytes(inputPath);
+
+            //Split the 1D byte array to ArrayList of 2D byte array-4*4 block=128 bit each block:
+            ArrayList<Byte[][]> keyList2DByteArray = splitByteArrayIntoBlocksArrayList(key1DByteArray);
+            ArrayList<Byte[][]> inputList2DByteArray = splitByteArrayIntoBlocksArrayList(input1DByteArray);
+
+            AES_third aes_third = new AES_third();
+
+            ArrayList<Byte[][]> outputList2DByteArray;
+
+            //User command is to encrypt:
+            if(args[0].equals("-e"))
             {
-                matrix[row][col] = count;
-                count++;
+                outputList2DByteArray = aes_third.aes_third_encrypt(inputList2DByteArray, keyList2DByteArray);
             }
+            //User command is to decrypt:
+            else
+            //if(args[0].equals("-e"))
+            {
+                outputList2DByteArray = aes_third.aes_third_decrypt(inputList2DByteArray, keyList2DByteArray);
+            }
+
+            byte[] output1DByteArray = reverse_SplitByteArrayIntoBlocksArrayList(outputList2DByteArray);
+
+            //Open File to write the output 1D byte array to:
+
+            //args[5] it's "-o"
+            //args[6] it's <path-to-output-file>
+            FileOutputStream fos = new FileOutputStream(args[6]);
+            fos.write(output1DByteArray);
+            fos.close();
+
+
+
+        }
+        //User command is to break the algorithm:
+        else if(args[0].equals("-b"))
+        {
+
         }
 
-        System.out.println("Origin Matrix");
-        print2DMatrix(matrix, matrixSize);
-        System.out.println();
 
-        int[][] shiftedMatrix;
 
-        shiftedMatrix = shiftColumns(matrix, "encrypt");
 
-        System.out.println("Shifted Matrix");
-        print2DMatrix(shiftedMatrix, matrixSize);
-        System.out.println();
 
-        shiftedMatrix = shiftColumns(shiftedMatrix, "decrypt");
 
-        System.out.println("Origin matrix-Shifted Shifted Matrix");
-        print2DMatrix(shiftedMatrix, matrixSize);
-        System.out.println();
+
+
+
+//        byte a;
+//        byte b;
+//        byte c;
+//
+//        a = 0;
+//        b = 0;
+//        c = (byte) (a^b);
+//        System.out.println(+ a + "^" + b + "=" + c);
+//
+//        a = 0;
+//        b = 1;
+//        c = (byte) (a^b);
+//        System.out.println(+ a + "^" + b + "=" + c);
+//
+//        a = 1;
+//        b = 0;
+//        c = (byte) (a^b);
+//        System.out.println(+ a + "^" + b + "=" + c);
+//
+//        a = 1;
+//        b = 1;
+//        c = (byte) (a^b);
+//        System.out.println(+ a + "^" + b + "=" + c);
+//
+//        System.out.println();
+//
+//        int matrixSize = 4;
+//        int[][] matrix = new int[matrixSize][matrixSize];
+//        int count = 0;
+//
+//        for (int row = 0; row < matrixSize; row++)
+//        {
+//            for (int col = 0; col < matrixSize; col++)
+//            {
+//                matrix[row][col] = count;
+//                count++;
+//            }
+//        }
+//
+//        System.out.println("Origin Matrix");
+//        print2DMatrix(matrix, matrixSize);
+//        System.out.println();
+//
+//        int[][] shiftedMatrix;
+//
+//        shiftedMatrix = shiftColumns(matrix, "encrypt");
+//
+//        System.out.println("Shifted Matrix");
+//        print2DMatrix(shiftedMatrix, matrixSize);
+//        System.out.println();
+//
+//        shiftedMatrix = shiftColumns(shiftedMatrix, "decrypt");
+//
+//        System.out.println("Origin matrix-Shifted Shifted Matrix");
+//        print2DMatrix(shiftedMatrix, matrixSize);
+//        System.out.println();
     }
+
+
 
     private static int[][] shiftColumns(int[][] matrix, String action)
     {

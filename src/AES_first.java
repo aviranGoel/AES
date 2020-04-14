@@ -10,12 +10,12 @@ public class AES_first
     }
 
     /**
-     * AES_first encrypt function.
+     * aes_first encrypt function.
      * @param plainText-text to encrypt.
-     * @param key-ket to encrypt with.
+     * @param key-key to encrypt with.
      * @return the encrypted text.
      */
-    public ArrayList<Byte[][]> AES_first_encrypt(ArrayList<Byte[][]> plainText, Byte[][]key)
+    public ArrayList<Byte[][]> aes_first_encrypt(ArrayList<Byte[][]> plainText, Byte[][]key)
     {
         ArrayList<Byte[][]> ciperText;
 
@@ -27,12 +27,12 @@ public class AES_first
     }
 
     /**
-     * AES_first decrypt function.
+     * aes_first decrypt function.
      * @param ciperText-text to decrypt.
      * @param key-key to decrypt with.
      * @return the decrypt text.
      */
-    public ArrayList<Byte[][]> AES_first_decrypt(ArrayList<Byte[][]> ciperText, Byte[][]key)
+    public ArrayList<Byte[][]> aes_first_decrypt(ArrayList<Byte[][]> ciperText, Byte[][]key)
     {
         ArrayList<Byte[][]> plainText;
 
@@ -82,7 +82,7 @@ public class AES_first
             return matrixShiftColumnsUp(matrix, shiftedMatrix);
         }
         //else (action.equals("decrypt"))
-        //col=1/2/3 -> shift 1/2/3 down-the revers shifting.
+        //col=1/2/3 -> shift 1/2/3 down-the reverse shifting.
         return matrixShiftColumnsDown(matrix, shiftedMatrix);
     }
 

@@ -10,6 +10,15 @@ public class AES_first
     }
 
     /**
+     * Get the matrixSize
+     * @return the matrixSize.
+     */
+    public int getMatrixSize()
+    {
+        return matrixSize;
+    }
+
+    /**
      * aes_first encrypt function.
      * @param plainText-text to encrypt.
      * @param key-key to encrypt with.

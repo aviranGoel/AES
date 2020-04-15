@@ -1,17 +1,21 @@
+import sun.security.util.BitArray;
+
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.List;
 
 public class Main
 {
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException
+    {
         //User command is to encrypt or decrypt:
         if(args[0].equals("-e") || args[0].equals("-d"))
         {
-            //Get key path and input path inorder to read thier bytes:
+            //Get key path and input path inorder to read their bytes:
 
             //args[1] it's "-k"
             //args[2] it's <path-to-key-file>
@@ -40,7 +44,7 @@ public class Main
             }
             //User command is to decrypt:
             else
-            //if(args[0].equals("-e"))
+            //if(args[0].equals("-d"))
             {
                 outputList2DByteArray = aes_third.aes_third_decrypt(inputList2DByteArray, keyList2DByteArray);
             }
@@ -54,14 +58,51 @@ public class Main
             FileOutputStream fos = new FileOutputStream(args[6]);
             fos.write(output1DByteArray);
             fos.close();
-
-
-
         }
+
         //User command is to break the algorithm:
         else if(args[0].equals("-b"))
         {
+            //Get message path and ciper path inorder to read their bytes:
 
+            //args[1] it's "-m"
+            //args[2] it's <path-to-message>
+            Path messagePath = Paths.get(args[2]);
+
+            //args[3] it's "-c"
+            //args[4] it's <path-to-ciper>
+            Path ciperPath = Paths.get(args[4]);
+
+            //Get the 1D byte array of the files from the path:
+            byte[] message1DByteArray = Files.readAllBytes(messagePath);
+            byte[] ciper1DByteArray = Files.readAllBytes(ciperPath);
+
+            //Split the 1D byte array to ArrayList of 2D byte array-4*4 block=128 bit each block:
+            ArrayList<Byte[][]> messageList2DByteArray = splitByteArrayIntoBlocksArrayList(message1DByteArray);
+            ArrayList<Byte[][]> ciperList2DByteArray = splitByteArrayIntoBlocksArrayList(ciper1DByteArray);
+
+            AES_third aes_third = new AES_third();
+
+            Byte[][] key1_2DByte = randomKeys();
+            Byte[][] key2_2DByte = randomKeys();
+            //NOTE: key1 and key2 need to be different.
+
+            ArrayList<Byte[][]> key3_2DByteArray = aes_third.aes_third_break(messageList2DByteArray, ciperList2DByteArray, key1_2DByte, key2_2DByte);/
+
+            byte[] key3_2DByte = reverse_SplitByteArrayIntoBlocksArrayList(key3_2DByteArray);
+
+            //TODO-Combine all 3 keys together
+            //NOTE: all 3 keys need to be different.
+
+            byte[] all3Keys = null;
+
+            //Open File to write the output 1D byte array to:
+
+            //args[5] it's "-o"
+            //args[6] it's <path-to-output-file>
+            FileOutputStream fos = new FileOutputStream(args[6]);
+            fos.write(all3Keys);
+            fos.close();
         }
 
 

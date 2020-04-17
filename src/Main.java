@@ -1,5 +1,6 @@
 import sun.security.util.BitArray;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -7,27 +8,37 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class Main
 {
     public static void main(String[] args) throws IOException
     {
+        //Path keyPath1 = Paths.get("C:\\Users\\USER\\Desktop\\לימודים\\'שנה ג\\'סמסטר ב\\אבטחת מחשבים\\עבודות\\עבודה 1\\test files\\key_long");
+        //Path inputPath1 = Paths.get("C:\\Users\\USER\\Desktop\\לימודים\\'שנה ג\\'סמסטר ב\\אבטחת מחשבים\\עבודות\\עבודה 1\\test files\\cipher_long");
+
+        //String command = "-e";
+
         //User command is to encrypt or decrypt:
         if(args[0].equals("-e") || args[0].equals("-d"))
+        //if(command.equals("-e") || command.equals("-d"))
         {
             //Get key path and input path inorder to read their bytes:
 
             //args[1] it's "-k"
             //args[2] it's <path-to-key-file>
             Path keyPath = Paths.get(args[2]);
+            //Path keyPath = Paths.get("C:\\Users\\USER\\Desktop\\test files\\key_short");
 
             //args[3] it's "-i"
             //args[4] it's <path-to-input-file>
             Path inputPath = Paths.get(args[4]);
+            //Path inputPath = Paths.get("C:\\Users\\USER\\Desktop\\test files\\message_short");
 
             //Get the 1D byte array of the files from the path:
             byte[] key1DByteArray = Files.readAllBytes(keyPath);
             byte[] input1DByteArray = Files.readAllBytes(inputPath);
+
 
             //Split the 1D byte array to ArrayList of 2D byte array-4*4 block=128 bit each block:
             ArrayList<Byte[][]> keyList2DByteArray = splitByteArrayIntoBlocksArrayList(key1DByteArray);
@@ -35,16 +46,17 @@ public class Main
 
             AES_third aes_third = new AES_third();
 
-            ArrayList<Byte[][]> outputList2DByteArray;
+            ArrayList<Byte[][]> outputList2DByteArray = new ArrayList<>();
 
             //User command is to encrypt:
+            //if(command.equals("-e"))
             if(args[0].equals("-e"))
             {
                 outputList2DByteArray = aes_third.aes_third_encrypt(inputList2DByteArray, keyList2DByteArray);
             }
             //User command is to decrypt:
-            else
-            //if(args[0].equals("-d"))
+            //else
+            if(args[0].equals("-d"))
             {
                 outputList2DByteArray = aes_third.aes_third_decrypt(inputList2DByteArray, keyList2DByteArray);
             }
@@ -56,6 +68,7 @@ public class Main
             //args[5] it's "-o"
             //args[6] it's <path-to-output-file>
             FileOutputStream fos = new FileOutputStream(args[6]);
+            //FileOutputStream fos = new FileOutputStream("C:\\Users\\USER\\Desktop\\test files\\ciperOut.txt");
             fos.write(output1DByteArray);
             fos.close();
         }
@@ -83,18 +96,23 @@ public class Main
 
             AES_third aes_third = new AES_third();
 
-            Byte[][] key1_2DByte = randomKeys();
-            Byte[][] key2_2DByte = randomKeys();
+            int keySize = 16;
+            byte [] key1 = randomKeys(keySize);
+            byte [] key2 = randomKeys(keySize);
+
+            Byte[][] key1_2DByte =splitByteArrayIntoBlocksArrayList(key1).get(0);
+            Byte[][] key2_2DByte = splitByteArrayIntoBlocksArrayList(key2).get(0);
             //NOTE: key1 and key2 need to be different.
 
-            ArrayList<Byte[][]> key3_2DByteArray = aes_third.aes_third_break(messageList2DByteArray, ciperList2DByteArray, key1_2DByte, key2_2DByte);/
+            ArrayList<Byte[][]> key3_2DByteArray = aes_third.aes_third_break(messageList2DByteArray, ciperList2DByteArray, key1_2DByte, key2_2DByte);
 
-            byte[] key3_2DByte = reverse_SplitByteArrayIntoBlocksArrayList(key3_2DByteArray);
+            byte[] key3 = reverse_SplitByteArrayIntoBlocksArrayList(key3_2DByteArray);
 
             //TODO-Combine all 3 keys together
             //NOTE: all 3 keys need to be different.
 
-            byte[] all3Keys = null;
+
+            byte[] all3Keys = CombineAll3keys(key1,key2,key3);
 
             //Open File to write the output 1D byte array to:
 
@@ -171,6 +189,91 @@ public class Main
 //        System.out.println();
     }
 
+    private static byte[] CombineAll3keys( byte[] key1 , byte [] key2 , byte[] key3){
+        byte[] all3Keys = new byte[key1.length*3];
+
+        for (int index = 0; index <all3Keys.length ; index++) {
+            if(index<key1.length){
+                all3Keys[index]=key1[index];
+            }
+            else if(index<key1.length*2){
+                all3Keys[index]=key2[index];
+            }
+            else if(index<key1.length*3){
+                all3Keys[index]=key3[index];
+            }
+        }
+        return all3Keys;
+    }
+
+    private static byte[] randomKeys(int keySize) {
+
+        //int size = keySize/8;
+        //size = (int) Math.sqrt(size);
+
+        byte[] key = new byte[keySize];
+
+        Random random = new Random();
+        random.nextBytes(key);
+
+        return key;
+
+    }
+
+    private static byte[] reverse_SplitByteArrayIntoBlocksArrayList(ArrayList<Byte[][]> messageInBlocks) {
+
+        Byte [] message = new Byte[16*messageInBlocks.size()];
+
+        int index = 0;
+        for (int numOfBlocks = 0; index < message.length ; numOfBlocks++) {
+
+            for (int row = 0; row < 4; row++) {
+
+                for (int col = 0; col < 4; col++) {
+
+                    message[index]=messageInBlocks.get(numOfBlocks)[col][row];
+                    index++;
+                }
+            }
+        }
+
+        byte [] messageByteArray = new byte[message.length];
+        for (int i = 0; i <message.length ; i++) {
+            messageByteArray[i] = message[i];
+        }
+
+        return messageByteArray;
+
+    }
+
+    private static ArrayList<Byte[][]> splitByteArrayIntoBlocksArrayList(byte[] message) {
+
+        //check how many blocks
+        int amountOfBlocks = message.length / 16;
+        ArrayList<Byte[][]> messageSplitToBlocks = new ArrayList();
+
+        //int index=0;
+        for (int i = 0; i < amountOfBlocks ; i++) {
+            messageSplitToBlocks.add(new Byte[4][4]);
+        }
+
+        int counterOfBlocks = -1;
+        for (int index = 0; index < message.length;) {
+
+            counterOfBlocks++;
+
+            for (int row = 0; row < 4; row++) {
+
+                for (int col = 0; col < 4; col++) {
+
+                    messageSplitToBlocks.get(counterOfBlocks)[col][row] = message[index];
+                    index++;
+                }
+
+            }
+        }
+        return messageSplitToBlocks;
+    }
 
 
     private static int[][] shiftColumns(int[][] matrix, String action)
